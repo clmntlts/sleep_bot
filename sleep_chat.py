@@ -36,8 +36,6 @@ if api_key:
         # If the selected model is deprecated, switch to 'gemini-1.5-flash'
         try:
             model = genai.GenerativeModel(model_name=selected_model, system_instruction=default_instruction)
-            model.get_info()  # Attempt to get model info to check if it's valid
-
         except Exception as e:
             if "deprecated" in str(e).lower():  # If the error mentions deprecation
                 st.warning(f"{selected_model} est déprécié. Passage à 'gemini-1.5-flash'.")
