@@ -49,8 +49,10 @@ if api_key:
 
         # 👉 Détermination de l'instruction système
         if uploaded_prompt:
+            # Lire et utiliser le fichier téléchargé comme instruction
             system_instruction = uploaded_prompt.read().decode("utf-8")
         else:
+            # Si aucun fichier téléchargé, utiliser l'instruction par défaut
             system_instruction = default_instruction
 
         # 👉 Initialisation du modèle
