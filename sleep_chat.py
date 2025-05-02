@@ -10,11 +10,7 @@ st.title("🤖 Sleep bot - Made in Clément")
 st.sidebar.header("🔐 Configuration")
 api_key = st.sidebar.text_input("Clé API Gemini", type="password", placeholder="Collez votre API Key ici")
 
-st.sidebar.markdown("---")
-default_instruction = st.sidebar.text_area(
-    "✍️ Instructions du système",
-    placeholder="Ex : Tu es un assistant psychologue expert du sommeil..."
-)
+default_instruction = "Tu es un assistant psychologue expert du sommeil"
 
 # 👉 GitHub raw URL for the sleep_prompt.txt
 github_raw_url = "https://raw.githubusercontent.com/clmntlts/sleep_bot/main/sleep_prompt.txt"
