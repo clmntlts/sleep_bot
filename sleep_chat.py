@@ -33,7 +33,7 @@ if api_key:
         # Default to a non-deprecated model if the user picks a deprecated one
         selected_model = st.sidebar.selectbox("🧠 Choisir le modèle", model_names, index=0)
 
-        # If the selected model is deprecated, switch to 'gemini-1.5-flash'
+        # Default to a non-deprecated model if the user picks a deprecated one
         try:
             model = genai.GenerativeModel(model_name=selected_model, system_instruction=default_instruction)
         except Exception as e:
