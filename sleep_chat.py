@@ -24,13 +24,27 @@ if api_key:
         model_names = []
         try:
             all_models = genai.list_models()
-            # Assuming models have an 'is_deprecated' field or similar flag
+            # Filter models to exclude deprecated ones
             model_names = [m.name for m in all_models if "generateContent" in m.supported_generation_methods and not getattr(m, 'is_deprecated', False)]
         except Exception as e:
             model_names = ["models/gemini-pro"]
             st.sidebar.warning(f"Erreur lors du chargement des modèles : {e}")
 
+        # Default to a non-deprecated model if the user picks a deprecated one
         selected_model = st.sidebar.selectbox("🧠 Choisir le modèle", model_names, index=0)
+
+        # If the selected model is deprecated, switch to 'gemini-1.5-flash'
+        try:
+            model = genai.GenerativeModel(model_name=selected_model, system_instruction=default_instruction)
+            model.get_info()  # Attempt to get model info to check if it's valid
+
+        except Exception as e:
+            if "deprecated" in str(e).lower():  # If the error mentions deprecation
+                st.warning(f"{selected_model} est déprécié. Passage à 'gemini-1.5-flash'.")
+                selected_model = 'gemini-1.5-flash'
+                model = genai.GenerativeModel(model_name=selected_model, system_instruction=default_instruction)
+            else:
+                raise e
 
         # 👉 Paramètres du modèle
         st.sidebar.header("⚙️ Paramètres du modèle")
