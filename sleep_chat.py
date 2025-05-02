@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Chatbot Gemini – Streamlit UI
-Auteur : cletesson
-Date : 02/05/2025
-"""
-
 import streamlit as st
 import google.generativeai as genai
-import io
+import requests
 
 # 👉 Configuration de la page
 st.set_page_config(page_title="Chatbot Gemini", layout="centered")
@@ -18,11 +11,13 @@ st.sidebar.header("🔐 Configuration")
 api_key = st.sidebar.text_input("Clé API Gemini", type="password", placeholder="Collez votre API Key ici")
 
 st.sidebar.markdown("---")
-uploaded_prompt = st.sidebar.file_uploader("📄 Fichier de prompt (txt/md)", type=["txt", "md"])
 default_instruction = st.sidebar.text_area(
     "✍️ Instructions du système",
     placeholder="Ex : Tu es un assistant psychologue expert du sommeil..."
 )
+
+# 👉 GitHub raw URL for the sleep_prompt.txt
+github_raw_url = "https://raw.githubusercontent.com/clmntlts/sleep_bot/main/sleep_prompt.txt"
 
 # 👉 Initialisation API et configuration
 if api_key:
@@ -47,12 +42,13 @@ if api_key:
         top_p = st.sidebar.slider("Top-p", 0.0, 1.0, 1.0)
         top_k = st.sidebar.slider("Top-k", 1, 100, 40)
 
-        # 👉 Détermination de l'instruction système
-        if uploaded_prompt:
-            # Lire et utiliser le fichier téléchargé comme instruction
-            system_instruction = uploaded_prompt.read().decode("utf-8")
-        else:
-            # Si aucun fichier téléchargé, utiliser l'instruction par défaut
+        # 👉 Télécharger et utiliser le fichier sleep_prompt.txt depuis GitHub
+        try:
+            response = requests.get(github_raw_url)
+            response.raise_for_status()  # Raises an error for non-200 status codes
+            system_instruction = response.text
+        except requests.exceptions.RequestException as e:
+            st.error(f"Erreur lors du téléchargement du fichier de prompt depuis GitHub : {e}")
             system_instruction = default_instruction
 
         # 👉 Initialisation du modèle
