@@ -24,7 +24,8 @@ if api_key:
         model_names = []
         try:
             all_models = genai.list_models()
-            model_names = [m.name for m in all_models if "generateContent" in m.supported_generation_methods]
+            # Assuming models have an 'is_deprecated' field or similar flag
+            model_names = [m.name for m in all_models if "generateContent" in m.supported_generation_methods and not getattr(m, 'is_deprecated', False)]
         except Exception as e:
             model_names = ["models/gemini-pro"]
             st.sidebar.warning(f"Erreur lors du chargement des modèles : {e}")
