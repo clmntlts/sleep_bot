@@ -20,7 +20,7 @@ top_k = st.sidebar.slider("Top-k", 1, 100, 40)
 
 # 👉 Paramètres généraux
 DEFAULT_PROMPT = "Tu es un assistant psychologue expert du sommeil spécialisé dans la Thérapie Cognitive et Comportementale pour l'Insomnie (TCC-I). Ton rôle est de guider un patient à travers un entretien clinique initial structuré. Suis attentivement les instructions de section."
-GITHUB_PROMPT_URL = "https://raw.githubusercontent.com/clmntlts/sleep_bot/main/sleep_prompt.txt" # Assurez-vous que ce prompt est complet
+GITHUB_PROMPT_URL = "https://raw.githubusercontent.com/clmntlts/sleep_bot/main/sleep_prompt.txt"
 MODEL_NAMES = ["gemini-1.5-pro-latest", "gemini-1.5-flash-latest"]
 
 INTERVIEW_SECTIONS = {
@@ -40,8 +40,6 @@ if "interview_section" not in st.session_state:
     st.session_state.interview_section = 1
 if "interview_complete" not in st.session_state:
     st.session_state.interview_complete = False
-if "awaiting_bot_intro" not in st.session_state:
-    st.session_state.awaiting_bot_intro = True
 
 @st.cache_data(show_spinner="🔄 Téléchargement du prompt depuis GitHub...")
 def fetch_prompt(url):
@@ -213,7 +211,6 @@ try:
             if st.session_state.interview_section < len(INTERVIEW_SECTIONS):
                 if st.button(f"✅ Terminer section {st.session_state.interview_section} et passer à la suivante", use_container_width=True):
                     st.session_state.interview_section += 1
-                    st.session_state.awaiting_bot_intro = True
                     st.rerun()
             elif st.session_state.interview_section == len(INTERVIEW_SECTIONS):
                 if st.button("🏁 Terminer l'entretien", use_container_width=True):
