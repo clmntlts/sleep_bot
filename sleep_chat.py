@@ -139,15 +139,6 @@ try:
     selected_model_name = st.sidebar.selectbox("🧠 Choisir le modèle", MODEL_NAMES, index=0)
     interview_prompt_base = fetch_prompt(GITHUB_PROMPT_URL)
 
-    # Auto-introduction par le bot en début de section
-    if not st.session_state.interview_complete and st.session_state.get("awaiting_bot_intro", True):
-        with st.chat_message("model"):
-            intro_prompt = f"Commençons la section {st.session_state.interview_section} : '{INTERVIEW_SECTIONS[st.session_state.interview_section]}'. Peux-tu me parler de cela ?"
-            response = st.session_state.chat.send_message(intro_prompt, generation_config=generation_config)
-            st.markdown(response.text if hasattr(response, "text") else "[Réponse vide]")
-        st.session_state.awaiting_bot_intro = False
-
-
     if not st.session_state.interview_complete:
         current_section_number = st.session_state.interview_section
         current_section_title = INTERVIEW_SECTIONS.get(current_section_number, "Section inconnue")
