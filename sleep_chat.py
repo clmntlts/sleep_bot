@@ -183,16 +183,6 @@ try:
         current_section_title = INTERVIEW_SECTIONS.get(st.session_state.interview_section, "Terminé")
         st.markdown(f"### 📋 Section {st.session_state.interview_section} / {len(INTERVIEW_SECTIONS)} : {current_section_title}")
         st.progress(st.session_state.interview_section / len(INTERVIEW_SECTIONS))
-    
-
-    if st.session_state.awaiting_bot_intro and "chat" in st.session_state:
-        section_intro = f"Nous allons commencer la section {st.session_state.interview_section} : {current_section_title}. Peux-tu poser une première question au patient pour explorer cette thématique ?"
-        with st.chat_message("model"):
-            message_placeholder = st.empty()
-            response = st.session_state.chat.send_message(section_intro, generation_config=generation_config)
-            response_text = response.parts[0].text if response.parts else "[Message vide]"
-            message_placeholder.markdown(response_text)
-        st.session_state.awaiting_bot_intro = False  # Reset du flag
 
     if "chat" in st.session_state:
         for message in st.session_state.chat.history:
