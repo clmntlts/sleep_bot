@@ -6,73 +6,87 @@ import requests
 st.set_page_config(page_title="Chatbot Gemini", layout="centered")
 st.title("🤖 Sleep bot - Made in Clément")
 
-# 👉 Barre latérale : Clé API et chargement prompt
+# 👉 Barre latérale : Configuration
 st.sidebar.header("🔐 Configuration")
 api_key = st.sidebar.text_input("Clé API Gemini", type="password", placeholder="Collez votre API Key ici")
 
-default_instruction = "Tu es un assistant psychologue expert du sommeil"
+# 👉 Paramètres du modèle
+st.sidebar.header("⚙️ Paramètres du modèle")
+temperature = st.sidebar.slider("Température (créativité)", 0.0, 1.0, 0.7)
+max_tokens = st.sidebar.slider("Longueur max de réponse", 100, 2048, 1024)
+top_p = st.sidebar.slider("Top-p", 0.0, 1.0, 1.0)
+top_k = st.sidebar.slider("Top-k", 1, 100, 40)
 
-# 👉 GitHub raw URL for the sleep_prompt.txt
-github_raw_url = "https://raw.githubusercontent.com/clmntlts/sleep_bot/main/sleep_prompt.txt"
+# 👉 Paramètres généraux
+DEFAULT_PROMPT = "Tu es un assistant psychologue expert du sommeil"
+GITHUB_PROMPT_URL = "https://raw.githubusercontent.com/clmntlts/sleep_bot/main/sleep_prompt.txt"
+MODEL_NAMES = ["gemini-2.5-pro-exp-03-25", "gemini-1.5-flash"]
 
-# 👉 Initialisation API et configuration
-if api_key:
+# 👉 Mise en cache du prompt
+@st.cache_data(show_spinner="🔄 Téléchargement du prompt depuis GitHub...")
+def fetch_prompt(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.text
+    except Exception:
+        return DEFAULT_PROMPT
+
+# 👉 Initialisation du modèle avec cache
+@st.cache_resource(show_spinner="🔄 Initialisation du modèle...")
+def init_model(model_name, system_instruction, config):
+    return genai.GenerativeModel(
+        model_name=model_name,
+        system_instruction=system_instruction,
+        generation_config=config
+    )
+
+# 👉 Fonction export markdown
+def export_conversation_as_markdown(history):
+    md = "# 🧠 Rapport de conversation\n\n"
+    for message in history:
+        role = "👤 Utilisateur" if message.role == "user" else "🤖 Assistant"
+        md += f"## {role}\n\n{message.parts[0].text}\n\n"
+    return md
+
+# 👉 Lancement principal
+if not api_key:
+    st.warning("Veuillez entrer votre clé API Gemini dans la barre latérale.")
+else:
     try:
         genai.configure(api_key=api_key)
 
-        # 👉 Liste des modèles
-        model_names = []
-        try:
-            model_names = ["gemini-2.5-pro-exp-03-25", "gemini-1.5-flash"]
-        except Exception as e:
-            model_names = ["models/gemini-pro"]
-            st.sidebar.warning(f"Erreur lors du chargement des modèles : {e}")
+        # 👉 Choix du modèle
+        selected_model = st.sidebar.selectbox("🧠 Choisir le modèle", MODEL_NAMES, index=0)
 
-        # Default to a non-deprecated model if the user picks a deprecated one
-        selected_model = st.sidebar.selectbox("🧠 Choisir le modèle", model_names, index=0)
+        # 👉 Chargement du prompt depuis GitHub
+        prompt_text = fetch_prompt(GITHUB_PROMPT_URL)
 
-        # Default to a non-deprecated model if the user picks a deprecated one
-        try:
-            model = genai.GenerativeModel(model_name=selected_model, system_instruction=default_instruction)
-        except Exception as e:
-            if "deprecated" in str(e).lower():  # If the error mentions deprecation
-                st.warning(f"{selected_model} est déprécié. Passage à 'gemini-1.5-flash'.")
-                selected_model = 'gemini-1.5-flash'
-                model = genai.GenerativeModel(model_name=selected_model, system_instruction=default_instruction)
-            else:
-                raise e
-
-        # 👉 Paramètres du modèle
-        st.sidebar.header("⚙️ Paramètres du modèle")
-        temperature = st.sidebar.slider("Température (créativité)", 0.0, 1.0, 0.7)
-        max_tokens = st.sidebar.slider("Longueur max de réponse", 100, 2048, 1024)
-        top_p = st.sidebar.slider("Top-p", 0.0, 1.0, 1.0)
-        top_k = st.sidebar.slider("Top-k", 1, 100, 40)
-
-        # 👉 Télécharger et utiliser le fichier sleep_prompt.txt depuis GitHub
-        try:
-            response = requests.get(github_raw_url)
-            response.raise_for_status()  # Raises an error for non-200 status codes
-            system_instruction = response.text
-        except requests.exceptions.RequestException as e:
-            st.error(f"Erreur lors du téléchargement du fichier de prompt depuis GitHub : {e}")
-            system_instruction = default_instruction
-
-        # 👉 Initialisation du modèle
-        model = genai.GenerativeModel(
-            model_name=selected_model,
-            system_instruction=system_instruction,
-            generation_config=genai.types.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-                top_p=top_p,
-                top_k=top_k,
-            )
+        # 👉 Configuration du modèle
+        generation_config = genai.types.GenerationConfig(
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+            top_p=top_p,
+            top_k=top_k,
         )
 
-        # 👉 Démarrage session de chat
+        # 👉 Initialisation ou récupération du modèle depuis session_state
+        if "model" not in st.session_state or st.session_state.model_name != selected_model:
+            try:
+                st.session_state.model = init_model(selected_model, prompt_text, generation_config)
+                st.session_state.model_name = selected_model
+            except Exception as e:
+                if "deprecated" in str(e).lower():
+                    st.warning(f"{selected_model} est déprécié. Passage à 'gemini-1.5-flash'.")
+                    selected_model = "gemini-1.5-flash"
+                    st.session_state.model = init_model(selected_model, prompt_text, generation_config)
+                    st.session_state.model_name = selected_model
+                else:
+                    raise e
+
+        # 👉 Initialisation du chat
         if "chat" not in st.session_state:
-            st.session_state.chat = model.start_chat(history=[])
+            st.session_state.chat = st.session_state.model.start_chat(history=[])
 
         # 👉 Zone de saisie utilisateur
         user_input = st.chat_input("Entrez votre message...")
@@ -82,7 +96,7 @@ if api_key:
             with st.chat_message(message.role):
                 st.markdown(message.parts[0].text)
 
-        # 👉 Traitement du message utilisateur
+        # 👉 Réponse du bot
         if user_input:
             with st.chat_message("user"):
                 st.markdown(user_input)
@@ -91,15 +105,7 @@ if api_key:
                 response = st.session_state.chat.send_message(user_input)
                 st.markdown(response.text)
 
-        # 👉 Fonction export markdown
-        def export_conversation_as_markdown(history):
-            md = "# 🧠 Rapport de conversation\n\n"
-            for message in history:
-                role = "👤 Utilisateur" if message.role == "user" else "🤖 Assistant"
-                md += f"## {role}\n\n{message.parts[0].text}\n\n"
-            return md
-
-        # 👉 Bouton de téléchargement du rapport
+        # 👉 Bouton d’exportation du rapport
         if st.session_state.chat.history:
             report_md = export_conversation_as_markdown(st.session_state.chat.history)
             st.download_button(
@@ -110,6 +116,4 @@ if api_key:
             )
 
     except Exception as e:
-        st.error(f"Erreur lors de l'initialisation du modèle : {e}")
-else:
-    st.warning("Veuillez entrer votre clé API Gemini dans la barre latérale.")
+        st.error(f"❌ Erreur lors de l'initialisation : {e}")
