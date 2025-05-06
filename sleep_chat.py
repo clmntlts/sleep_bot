@@ -41,6 +41,7 @@ if "interview_section" not in st.session_state:
 if "interview_complete" not in st.session_state:
     st.session_state.interview_complete = False
 
+
 @st.cache_data(show_spinner="🔄 Téléchargement du prompt depuis GitHub...")
 def fetch_prompt(url):
     try:
@@ -211,6 +212,7 @@ try:
             if st.session_state.interview_section < len(INTERVIEW_SECTIONS):
                 if st.button(f"✅ Terminer section {st.session_state.interview_section} et passer à la suivante", use_container_width=True):
                     st.session_state.interview_section += 1
+                    st.session_state.awaiting_bot_intro = True
                     st.rerun()
             elif st.session_state.interview_section == len(INTERVIEW_SECTIONS):
                 if st.button("🏁 Terminer l'entretien", use_container_width=True):
