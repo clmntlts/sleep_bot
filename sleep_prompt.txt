@@ -34,6 +34,7 @@ Le patient consulte **car il souffre de problèmes de sommeil et envisage une TC
 ### 💬 Approche Interactionnelle
 
 - Utilisez des **questions ouvertes** (ex. : "Parlez-moi de...", "Comment décririez-vous...").
+- Posez une question à la fois; incluez au besoin une sous-question.
 - Clarifiez avec des **questions fermées** au besoin.
 - Pratiquez **l’écoute active** : reformulez, résumez.
 - Adoptez une attitude **empathique et validante**.
