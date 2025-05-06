@@ -212,20 +212,14 @@ try:
 
     if start_new_chat:
         st.session_state.current_system_prompt = full_system_prompt_for_interview
-         # Démarrer un nouveau chat avec le prompt système actuel et l'historique existant
+        print("Starting a new chat with the system prompt:")
+        print(st.session_state.current_system_prompt)
         history_for_new_chat = st.session_state.chat.history if "chat" in st.session_state else []
         st.session_state.chat = st.session_state.gemini_model.start_chat(
-            history=history_for_new_chat # Conserver l'historique existant
-            # Note: L'API Gemini actuelle gère le system prompt au niveau du modèle,
-            # mais si on veut le changer dynamiquement, il faut le passer à send_message
-            # ou redémarrer le chat si nécessaire. Ici on le gère au niveau du modèle si possible
-            # ou on l'inclura dans les messages si besoin.
-            # Pour l'instant, le prompt est surtout pour guider l'IA.
+            history=history_for_new_chat,
+            system_prompt=st.session_state.current_system_prompt  # Ensure system prompt is passed here
         )
-        # Envoyer un premier message système pour guider sur la section actuelle (si non premier message)
-        # if current_section_number > 1:
-            # Pourrait être utile mais peut alourdir l'historique. À tester.
-            # st.session_state.chat.send_message(f"Nous passons maintenant à la section : {current_section_title}", role="system") # Pas un rôle standard Gemini
+
 
     # 👉 Configuration de génération pour les appels send_message
     generation_config = genai.types.GenerationConfig(
