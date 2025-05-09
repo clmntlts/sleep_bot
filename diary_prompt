@@ -1,0 +1,159 @@
+**Comprehensive Sleep Diary Data Analysis for Cognitive Behavioral Therapy for Insomnia (CBT-i) Planning**
+
+**Objective:**
+
+To conduct a detailed quantitative and qualitative analysis of patient sleep diary data. The goal is to identify significant sleep patterns, contributing factors to sleep disturbance, and infer potential underlying mechanisms relevant to insomnia. The output of this analysis will serve as a data-driven foundation for developing a personalized and effective CBT-i treatment plan.
+
+**Data Sources:**
+
+The analysis will utilize data from the following structured tables:
+
+1.  **`sleep_record`**: Contains daily summary information for each night's sleep attempt.
+    * `day_count`: Sequential number representing the day of data collection (e.g., Day 1, Day 2).
+    * `bedtime`: Time the patient *attempted* to fall asleep or got into bed (HH:MM format).
+    * `wake_time`: Time the patient finally exited the bed for the day (HH:MM format).
+    * `time_in_bed`: Calculated total duration from `bedtime` to `wake_time` (numeric, hours).
+    * `sleep_quality`: Subjective rating of sleep quality (0-10 scale, 10 = excellent sleep).
+    * `morning_fatigue`: Subjective rating of fatigue upon waking (0-10 scale, 10 = extreme fatigue).
+
+2.  **`sleep_periods`**: Contains detailed segments within a single night, indicating whether the patient was attempting to sleep or was awake. Each record links to a `sleep_record`.
+    * `sleep_record_id`: Foreign key linking to the corresponding daily `sleep_record`.
+    * `period_id`: Sequential identifier for the segment within that night.
+    * `start_time`: The start time of the specific sleep/wake period (HH:MM format).
+    * `end_time`: The end time of the specific sleep/wake period (HH:MM format).
+    * `duration`: The duration of this specific period (numeric, hours).
+    * **Note:** Segments typically alternate between 'sleep' (attempted or actual) and 'awake'. The *sum* of durations of periods where the patient reports being asleep or attempting to sleep within a night approximates Total Sleep Time (TST).
+
+**Analysis Requirements & Process:**
+
+Analyze the data over the entire collection period (`day_count` 1 to end).
+
+**I. Quantitative Metrics & Descriptive Statistics:**
+
+Calculate the following core sleep metrics. For each metric, provide the *average*, *standard deviation*, and *range* over the analysis period to assess both central tendency and variability.
+
+1.  **Sleep Schedule:**
+    * Average and variability of `bedtime` (in a quantitative format, e.g., hours from a reference point like noon or midnight).
+    * Average and variability of `wake_time`.
+    * Average and variability of `time_in_bed` (TIB).
+    * Assess consistency: High standard deviations indicate significant variability in schedule.
+
+2.  **Total Sleep Time (TST):**
+    * For each day, calculate TST by summing the `duration` values from all associated `sleep_periods` where the patient was attempting to sleep (assuming `sleep_periods` differentiate between sleep attempts and definite awakenings; if not, sum *all* `duration` values and note this limitation in interpretation).
+    * Calculate average TST and its variability.
+
+3.  **Sleep Efficiency (SE):**
+    * For each day, calculate SE = (TST / TIB) * 100%.
+    * Calculate average SE and its variability.
+    * Identify the percentage of nights with SE < 85% (a common clinical threshold). Note nights with particularly low SE (<70%).
+
+4.  **Sleep Onset Latency (SOL):**
+    * For each day, estimate SOL as the time difference between `bedtime` and the `start_time` of the *first* recorded sleep period.
+    * Calculate average SOL and its variability.
+    * Identify the percentage of nights with prolonged SOL (> 30 minutes).
+
+5.  **Wake After Sleep Onset (WASO):**
+    * For each day, estimate WASO by summing the `duration` values of any periods marked as 'awake' *after* the first sleep period and *before* the final wake-up time.
+    * Calculate average WASO and its variability.
+    * Identify the percentage of nights with significant WASO (e.g., > 30-60 minutes total).
+    * Calculate the average *number* of awakenings per night (based on the number of 'awake' periods).
+
+6.  **Subjective Ratings:**
+    * Calculate average `sleep_quality` and `morning_fatigue`.
+    * Analyze the relationship (correlation) between subjective ratings and objective metrics (e.g., TST, SE, SOL, WASO). Does low SE correspond to poor quality? Does short TST predict high fatigue?
+
+7.  **Trend Analysis:**
+    * Plot key metrics (TST, SE, SOL, WASO, Quality, Fatigue, Bedtime, Wake Time) against `day_count`.
+    * Identify any visual trends: improvement, worsening, or stability over the period.
+
+**II. Clinical Interpretation & Pattern Identification (CBT-i Focus):**
+
+Translate the quantitative findings into clinically relevant insights and hypotheses.
+
+1.  **Identify Probable Insomnia Presentation(s):** Based on the dominant patterns:
+    * **Sleep Onset Insomnia:** Indicated by consistently prolonged SOL.
+    * **Sleep Maintenance Insomnia:** Indicated by significant WASO and/or multiple awakenings.
+    * **Early Morning Awakening:** Indicated by a `wake_time` significantly earlier than desired or needed, especially if followed by inability to return to sleep (potentially inferred from `sleep_periods`).
+    * **Non-Restorative Sleep:** Suggested if subjective ratings (`sleep_quality`, `morning_fatigue`) are consistently poor despite seemingly adequate quantitative sleep metrics (TST, SE).
+    * **Circadian Rhythm Issues:** Suggested by highly variable bedtimes/wake times or a consistent pattern of delayed or advanced sleep phase (though true diagnosis requires actigraphy or further assessment).
+
+2.  **Hypothesize Maladaptive Sleep Behaviors & Cognitions:** Connect observed patterns to common CBT-i targets:
+    * **Sleep Effort/Extended Time in Bed:** Is TIB significantly longer than TST? Is TIB highly variable? This suggests spending excessive time in bed while awake, potentially increasing frustration and conditioning the bed as a place of wakefulness.
+    * **Stimulus Control Violations:** Do high SOL or WASO suggest spending time in bed awake, trying to force sleep, or engaging in non-sleep activities in bed?
+    * **Poor Sleep Hygiene:** Does high variability in bedtime/wake time suggest irregular sleep schedules?
+    * **Cognitive Arousal/Worry:** Can the persistent poor quality/fatigue despite adequate sleep metrics be indicative of hyperarousal or negative cognitions about sleep?
+
+3.  **Identify Potential Perpetuating Factors:** Based on the data, what behaviors or patterns might be *maintaining* the sleep problem?
+    * Using the bed for activities other than sleep.
+    * Irregular sleep-wake schedules.
+    * Attempting to "catch up" on sleep by staying in bed longer (increasing TIB without increasing TST).
+
+**III. Targeted CBT-i Therapeutic Recommendations:**
+
+Based on the analysis and clinical interpretation, provide specific, actionable recommendations for the therapist to consider. Tailor recommendations to the identified dominant patterns.
+
+1.  **Sleep Restriction Therapy (SRT):**
+    * *Indication:* Low Sleep Efficiency (SE), particularly if TIB >> TST.
+    * *Recommendation:* Calculate an initial recommended sleep window based on average TST (e.g., Average TST + 30 minutes, but not less than 5.0 - 5.5 hours, subject to clinical judgment). Specify a consistent *target wake-up time*. Instruct the patient to limit time in bed to this window. Explain the rationale (consolidating sleep drive).
+
+2.  **Stimulus Control Therapy (SCT):**
+    * *Indication:* High Sleep Onset Latency (SOL) and/or Wake After Sleep Onset (WASO).
+    * *Recommendation:* Provide standard SCT instructions: Go to bed only when sleepy. Get out of bed if unable to sleep after ~20 minutes and return only when sleepy. Use the bed only for sleep and intimacy. Set an alarm for the consistent target wake-up time. Avoid napping.
+
+3.  **Sleep Hygiene Education:**
+    * *Indication:* Irregular schedule (high variability in bedtime/wake time), potential inferences about environmental factors or behaviors.
+    * *Recommendation:* Educate on maintaining a consistent sleep-wake schedule (especially wake time). Address potential factors like caffeine/alcohol timing, nicotine, light exposure management (morning light, evening dim light), noise, room temperature, and exercise timing.
+
+4.  **Cognitive Restructuring (CR):**
+    * *Indication:* Poor subjective quality/high fatigue despite adequate metrics, signs of performance anxiety around sleep, excessive worry about consequences of insomnia.
+    * *Recommendation:* Suggest exploring and challenging unhelpful thoughts and beliefs about sleep and insomnia. Identify specific cognitive targets based on patient reporting (if available) or infer from patterns (e.g., "I must get 8 hours," "I won't be able to function if I don't sleep").
+
+5.  **Relaxation Techniques:**
+    * *Indication:* Suspected physiological hyperarousal contributing to SOL or WASO.
+    * *Recommendation:* Suggest introducing relaxation strategies (e.g., progressive muscle relaxation, diaphragmatic breathing, guided imagery) as part of a pre-sleep routine or during nocturnal awakenings.
+
+6.  **Other Potential Targets:** Address any other specific behavioral patterns inferred from the data (e.g., late-night eating, excessive screen time before bed, napping behavior if known).
+
+**IV. Recommendations for Further Assessment/Monitoring:**
+
+Identify crucial information not present in the current data structure that would enhance the CBT-i plan and monitor progress.
+
+1.  Daytime functioning and impairment.
+2.  Daytime napping behavior (frequency, duration).
+3.  Caffeine, alcohol, and nicotine use (timing and quantity).
+4.  Medication use (prescription and over-the-counter, especially sleep aids).
+5.  Physical activity and exercise timing.
+6.  Stress levels and coping mechanisms.
+7.  Specific pre-sleep routine activities.
+8.  Environmental factors (bedroom noise, light, temperature).
+9.  Medical conditions or pain affecting sleep.
+10. Details on *why* the patient was awake during WASO periods (e.g., ruminating, using phone, restless).
+11. Tracking adherence to CBT-i recommendations.
+
+**Report Format:**
+
+Structure the analysis report clearly and professionally for a clinical audience:
+
+1.  **Executive Summary:**
+    * Brief overview of the analysis period and data quality.
+    * Key average metrics (TIB, TST, SE, SOL, WASO).
+    * Summary of dominant patterns and hypothesized insomnia presentation(s).
+    * Highlight the top 1-2 priority areas for intervention.
+
+2.  **Detailed Sleep Metric Analysis:**
+    * Present the calculated average, standard deviation, and range for all quantitative metrics (TIB, TST, SE, SOL, WASO, Awakenings, Quality, Fatigue).
+    * Discuss findings regarding sleep schedule consistency.
+    * Include visualizations of trends over time for key metrics (if possible).
+
+3.  **Clinical Formulation & Interpretation:**
+    * Discuss the identified patterns in relation to CBT-i concepts (e.g., explaining *how* the low SE and high TIB suggest excessive time in bed).
+    * Elaborate on the hypothesized insomnia presentation(s).
+    * Discuss potential maladaptive behaviors and cognitions inferred from the data.
+
+4.  **Targeted CBT-i Recommendations:**
+    * Provide specific recommendations organized by CBT-i component (SRT, SCT, Hygiene, CR, etc.), directly linking each recommendation back to the patterns identified in the analysis. Include the calculated initial sleep window for SRT if applicable.
+
+5.  **Recommendations for Further Assessment & Monitoring:**
+    * List specific information to gather or areas to monitor going forward.
+
+**Tone:** Maintain a professional, data-driven, and supportive tone throughout the analysis and report. Clearly distinguish between data-backed findings and clinical hypotheses.
